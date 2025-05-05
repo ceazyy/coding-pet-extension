@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Coding Pet Companion</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Your Coding Pet</h1>
+    
+    <div class="pet-display">
+      <img id="pet-image" src="../assets/pets/dog/normal.png" alt="Your coding pet">
+    </div>
+    
+    <div class="pet-status">
+      <div class="status-row">
+        <span>Health:</span>
+        <div class="progress-bar">
+          <div id="health-bar" class="progress-fill"></div>
+        </div>
+      </div>
+      
+      <div class="status-row">
+        <span>Happiness:</span>
+        <div class="progress-bar">
+          <div id="happiness-bar" class="progress-fill"></div>
+        </div>
+      </div>
+      
+      <div class="status-row">
+        <span>Today's Progress:</span>
+        <span id="progress-text">0/3</span>
+      </div>
+      
+      <div class="status-row">
+        <span>Backlog:</span>
+        <span id="backlog-text">0</span>
+      </div>
+    </div>
+    
+    <div class="settings">
+      <h2>Settings</h2>
+      
+      <div class="setting-row">
+        <label for="chonk-level">Daily "Chonk" Goal:</label>
+        <input type="number" id="chonk-level" min="1" max="20" value="3">
+      </div>
+      
+      <button id="save-settings">Save Settings</button>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

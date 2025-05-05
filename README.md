@@ -36,7 +36,8 @@ Kegawa is a Chrome extension that provides a virtual pet companion to motivate y
 - **Sleeping**: Resting state
 
 ## File Structure
-'''coding-pet-extension/
+```
+coding-pet-extension/
 ├── manifest.json
 ├── background.js
 ├── content.js
@@ -55,7 +56,8 @@ Kegawa is a Chrome extension that provides a virtual pet companion to motivate y
 │           ├── sleeping.png
 │           └── frail.png
 └── utils/
-    └── storage.js'''
+    └── storage.js
+```
 ## Development
 
 - `popup/`: Contains the extension popup UI files

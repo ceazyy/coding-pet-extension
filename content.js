@@ -38,11 +38,17 @@ function createPetOverlay() {
       z-index: 10000;
       cursor: pointer;
       transition: all 0.3s ease;
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
     `;
     
     const petImage = document.createElement('img');
     petImage.id = 'pet-image';
-    petImage.style.width = '100%';
+    petImage.style.width = '80%';
     petImage.style.height = 'auto';
     petContainer.appendChild(petImage);
     
@@ -170,32 +176,29 @@ function startResultObserver() {
 
 // Check if there's a successful submission result
 function checkForSubmissionResult() {
-  // Look for success indicators in the DOM
-  const resultElements = document.querySelectorAll('data-e2e-locator="submission-result"');
+  // Look for the specific Accepted message structure
+  const resultElement = document.querySelector('[data-e2e-locator="submission-result"]');
   
-  let accepted = false;
-  
-  // Check text content of result elements
-  for (const el of resultElements) {
-    if (el.textContent.includes('Accepted')) {
-      accepted = true;
-      break;
-    }
-  }
-  
-  // Check for success elements
-  if (accepted) {
+  if (resultElement && resultElement.textContent === 'Accepted') {
     console.log('Coding Pet Extension: Problem solved successfully!');
     isWatchingSubmission = false;
     
     // Notify background script about solved problem
     chrome.runtime.sendMessage({
       type: 'PROBLEM_SOLVED'
-    }, response => {
+    }, async response => {
       console.log("Coding Pet Extension: Got response from background", response);
       if (response && response.success) {
-        // Show pet animation/notification
-        showPetHappyAnimation();
+        // Update progress immediately
+        const { petState } = await chrome.storage.local.get('petState');
+        if (petState) {
+          petState.solvedToday += 1;
+          petState.happiness = Math.min(100, petState.happiness + 10);
+          await chrome.storage.local.set({ petState });
+          
+          // Show pet animation/notification
+          showPetHappyAnimation();
+        }
       }
     });
   }
@@ -253,23 +256,46 @@ async function showPetInteractionMenu(event) {
     position: fixed;
     bottom: 130px;
     right: 20px;
-    background: white;
+    background: #ffffff;
     border: 1px solid #ccc;
     border-radius: 8px;
-    padding: 10px;
+    padding: 15px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     z-index: 10001;
+    color: #333333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
   `;
   
   menu.innerHTML = `
-    <div style="margin-bottom: 8px;">
-      <div>Health: ${petState.health}%</div>
-      <div>Happiness: ${petState.happiness}%</div>
-      <div>Progress: ${petState.solvedToday}/${petState.chonkLevel}</div>
+    <div style="margin-bottom: 12px; font-size: 14px;">
+      <div style="margin-bottom: 6px; color: #333;">Health: <span style="color: ${getHealthColor(petState.health)}">${petState.health}%</span></div>
+      <div style="margin-bottom: 6px; color: #333;">Happiness: <span style="color: ${getHappinessColor(petState.happiness)}">${petState.happiness}%</span></div>
+      <div style="margin-bottom: 6px; color: #333;">Progress: <span style="color: #2196F3">${petState.solvedToday}/${petState.chonkLevel}</span></div>
     </div>
     <div class="menu-option" id="let-sleep">Let it sleep</div>
     <div class="menu-option" id="ask-help">Ask for help</div>
   `;
+
+  // Update the CSS for menu options
+  const menuStyles = `
+    .menu-option {
+      padding: 8px 16px;
+      cursor: pointer;
+      border-radius: 4px;
+      color: #333333;
+      margin-top: 8px;
+      transition: background-color 0.2s;
+    }
+    
+    .menu-option:hover {
+      background-color: #f0f0f0;
+      color: #000000;
+    }
+  `;
+  
+  const styleElement = document.createElement('style');
+  styleElement.textContent = menuStyles;
+  document.head.appendChild(styleElement);
   
   document.body.appendChild(menu);
   
@@ -294,6 +320,19 @@ async function showPetInteractionMenu(event) {
   
   // Prevent the click from propagating
   event.stopPropagation();
+}
+
+// Add helper functions for colors
+function getHealthColor(health) {
+  if (health < 30) return '#f44336';
+  if (health < 70) return '#ff9800';
+  return '#4caf50';
+}
+
+function getHappinessColor(happiness) {
+  if (happiness < 30) return '#f44336';
+  if (happiness < 70) return '#ff9800';
+  return '#4caf50';
 }
 
 // Listen for messages from popup or background

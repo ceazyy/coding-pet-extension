@@ -28,7 +28,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://leetcode.com/*"],
+      "matches": ["<all_urls>"],
       "js": ["content.js"]
     }
   ]

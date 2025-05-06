@@ -17,15 +17,16 @@ function startMonitoring() {
   startResultObserver();
 }
 
+// Start monitoring immediately regardless of page
+startMonitoring();
+
 // Create the persistent pet overlay
 function createPetOverlay() {
   if (petOverlayActive) return;
   
-  // Create pet container if it doesn't exist
   let petContainer = document.getElementById('coding-pet-container');
   
   if (!petContainer) {
-    // Create and add the pet container
     petContainer = document.createElement('div');
     petContainer.id = 'coding-pet-container';
     petContainer.style.cssText = `
@@ -35,24 +36,24 @@ function createPetOverlay() {
       width: 100px;
       height: 100px;
       z-index: 10000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
+      pointer-events: none;
       transition: all 0.3s ease;
     `;
-    document.body.appendChild(petContainer);
-  
-    // Add click event listener
-    petContainer.addEventListener('click', showPetInteractionMenu);
     
-    // Set initial pet state
+    const petImage = document.createElement('img');
+    petImage.style.width = '100%';
+    petImage.style.height = 'auto';
+    petImage.style.pointerEvents = 'auto';
+    petContainer.appendChild(petImage);
+    
+    document.body.appendChild(petContainer);
+    petOverlayActive = true;
+
+    // Update pet display immediately
     updatePetDisplay();
     
-    // Mark overlay as active
-    petOverlayActive = true;
-    
-    console.log("Coding Pet Extension: Pet overlay created");
+    // Add periodic updates
+    setInterval(updatePetDisplay, 5000);
   }
 }
 

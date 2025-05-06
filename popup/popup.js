@@ -66,8 +66,7 @@ function getHealthColor(health) {
 }
 
 // Set up event listeners
-function setupEventListeners() {
-  // Save settings button
+async function setupEventListeners() {
   const saveButton = document.getElementById('save-settings');
   if (saveButton) {
     saveButton.addEventListener('click', async () => {
@@ -81,49 +80,56 @@ function setupEventListeners() {
           alert('Please enter a valid number for daily goal (minimum 1)');
           return;
         }
+
+        // Get both pet state and settings
+        const { petState, settings } = await chrome.storage.local.get(['petState', 'settings']);
         
-        console.log(`Coding Pet Extension: Saving new chonk level: ${chonkLevel}`);
+        // Update both states
+        const updatedSettings = {
+          ...settings,
+          dailyGoal: chonkLevel
+        };
+
+        const updatedPetState = {
+          ...petState,
+          chonkLevel: chonkLevel
+        };
+
+        // Save both states
+        await chrome.storage.local.set({ 
+          settings: updatedSettings,
+          petState: updatedPetState 
+        });
+
+        // Show success message
+        showSaveSuccess();
         
-        const { petState } = await chrome.storage.local.get('petState');
-        if (petState) {
-          petState.chonkLevel = chonkLevel;
-          await chrome.storage.local.set({ petState });
-          console.log("Coding Pet Extension: Updated chonk level in storage");
-          
-          // Show confirmation message
-          const messageElem = document.createElement('div');
-          messageElem.textContent = 'Settings saved!';
-          messageElem.style.cssText = `
-            color: white;
-            background-color: #4caf50;
-            padding: 8px;
-            border-radius: 4px;
-            text-align: center;
-            margin-top: 10px;
-          `;
-          
-          const container = document.querySelector('.settings');
-          container.appendChild(messageElem);
-          
-          // Remove message after 2 seconds
-          setTimeout(() => {
-            container.removeChild(messageElem);
-          }, 2000);
-          
-          // Update display to reflect changes
-          await updatePetDisplay();
-          
-          // Notify content script to update if needed
-          notifyContentScript();
-        }
+        // Update display
+        await updatePetDisplay();
+        
+        // Notify content script
+        notifyContentScript();
+
       } catch (error) {
         console.error("Coding Pet Extension: Error saving settings", error);
         alert('There was an error saving your settings. Please try again.');
       }
     });
-  } else {
-    console.error("Coding Pet Extension: Save settings button not found");
   }
+}
+
+// Separate function for success message
+function showSaveSuccess() {
+  const messageElem = document.createElement('div');
+  messageElem.textContent = 'Settings saved!';
+  messageElem.classList.add('save-message');
+  
+  const container = document.querySelector('.settings');
+  container.appendChild(messageElem);
+  
+  setTimeout(() => {
+    container.removeChild(messageElem);
+  }, 2000);
 }
 
 // Notify content script to update pet display
@@ -138,4 +144,4 @@ function notifyContentScript() {
 }
 
 // Set up periodic refresh to keep popup in sync
-setInterval(updatePetDisplay, 1000);
+setInterval(updatePetDisplay, 5000);

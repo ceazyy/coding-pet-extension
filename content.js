@@ -236,7 +236,7 @@ function checkForSubmissionResult() {
           border-radius: 8px;
           padding: 10px;
           z-index: 10002;
-          animation: fadeOut 2s forwards;
+          animation: fadeOut 5s forwards;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
           color: #333;
           box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -316,11 +316,9 @@ async function showPetInteractionMenu(event) {
   // Remove existing menu if present
   const existingMenu = document.getElementById('pet-interaction-menu');
   if (existingMenu) {
-    document.body.removeChild(existingMenu);
+    existingMenu.remove();
     return;
   }
-
-  // Remove any existing menu
 
   const { petState } = await chrome.storage.local.get('petState');
   
@@ -350,50 +348,30 @@ async function showPetInteractionMenu(event) {
     <div class="menu-option" id="ask-help">Ask for help</div>
   `;
 
-  // Update the CSS for menu options
-  const menuStyles = `
-    .menu-option {
-      padding: 8px 16px;
-      cursor: pointer;
-      border-radius: 4px;
-      color: #333333;
-      margin-top: 8px;
-      transition: background-color 0.2s;
-    }
-    
-    .menu-option:hover {
-      background-color: #f0f0f0;
-      color: #000000;
-    }
-  `;
-  
-  const styleElement = document.createElement('style');
-  styleElement.textContent = menuStyles;
-  document.head.appendChild(styleElement);
-  
   document.body.appendChild(menu);
   
   // Add event listeners to menu options
   document.getElementById('let-sleep').addEventListener('click', () => {
-    document.body.removeChild(menu);
+    menu.remove();
   });
   
   document.getElementById('ask-help').addEventListener('click', () => {
-    // In MVP, we'll just show a placeholder for the help feature
     alert('Help feature coming soon in the next version!');
-    document.body.removeChild(menu);
+    menu.remove();
   });
   
   // Close menu when clicking elsewhere
-  document.addEventListener('click', function closeMenu(e) {
+  const handleClickOutside = (e) => {
     if (!menu.contains(e.target) && e.target.id !== 'coding-pet-container') {
-      document.body.removeChild(menu);
-      document.removeEventListener('click', closeMenu);
+      menu.remove();
+      document.removeEventListener('click', handleClickOutside);
     }
-  });
+  };
   
-  // Prevent the click from propagating
-  event.stopPropagation();
+  // Add click listener with a small delay to prevent immediate triggering
+  setTimeout(() => {
+    document.addEventListener('click', handleClickOutside);
+  }, 0);
 }
 
 // Add helper functions for colors

@@ -23,20 +23,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   }
 });
 
-// Set up daily reset alarm
-chrome.alarms.create('dailyReset', {
-  periodInMinutes: 1440 // 24 hours
-});
 
-// Listen for alarm
-chrome.alarms.onAlarm.addListener(async (alarm) => {
-  if (alarm.name === 'dailyReset') {
-    console.log("Coding Pet Extension: Daily reset alarm triggered");
-    await performDailyReset();
-  }
-});
-
-// Handle the daily reset logic
 async function performDailyReset() {
   try {
     const { petState } = await chrome.storage.local.get('petState');

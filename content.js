@@ -5,6 +5,9 @@ let petOverlayActive = false;
 let lastSolvedProblem = null;
 let isProcessingSubmission = false;
 
+// Add debug logging
+console.log("Coding Pet Extension: Content script loaded");
+
 // Start monitoring for submissions
 function startMonitoring() {
   console.log("Coding Pet Extension: Monitoring started on LeetCode");
@@ -24,7 +27,12 @@ startMonitoring();
 
 // Create the persistent pet overlay
 function createPetOverlay() {
-  if (petOverlayActive) return;
+  console.log("Creating pet overlay...");
+  
+  if (petOverlayActive) {
+    console.log("Overlay already active");
+    return;
+  }
   
   let petContainer = document.getElementById('coding-pet-container');
   
@@ -37,33 +45,59 @@ function createPetOverlay() {
       right: 20px;
       width: 100px;
       height: 100px;
-      z-index: 10000;
+      z-index: 999999;
       cursor: pointer;
-      transition: all 0.3s ease;
       background-color: rgba(255, 255, 255, 0.9);
       border-radius: 10px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       display: flex;
       justify-content: center;
       align-items: center;
+      pointer-events: auto;
     `;
     
     const petImage = document.createElement('img');
     petImage.id = 'pet-image';
-    petImage.style.width = '80%';
-    petImage.style.height = 'auto';
-    petContainer.appendChild(petImage);
+    petImage.style.cssText = `
+      width: 80%;
+      height: 80%;
+      object-fit: contain;
+    `;
     
-    // Add click handler for interactions
+    // Set initial image
+    const defaultImagePath = chrome.runtime.getURL('assets/pets/cat/normal.png');
+    console.log("Setting initial image path:", defaultImagePath);
+    petImage.src = defaultImagePath;
+    
+    // Add error handling for image loading
+    petImage.onerror = () => {
+      console.error("Failed to load pet image:", petImage.src);
+    };
+    
+    petImage.onload = () => {
+      console.log("Pet image loaded successfully");
+    };
+    
+    petContainer.appendChild(petImage);
     petContainer.addEventListener('click', showPetInteractionMenu);
     
     document.body.appendChild(petContainer);
     petOverlayActive = true;
+    console.log("Pet overlay created and added to DOM");
 
     // Initial state update
     updatePetDisplay();
   }
 }
+
+// Ensure overlay is created when content script loads
+document.addEventListener('DOMContentLoaded', () => {
+  console.log("DOM loaded, creating overlay...");
+  createPetOverlay();
+});
+
+// Also create overlay immediately in case DOMContentLoaded already fired
+createPetOverlay();
 
 // Update the pet display based on current state
 async function updatePetDisplay() {
@@ -76,20 +110,21 @@ async function updatePetDisplay() {
     const { petState } = await chrome.storage.local.get('petState');
     if (!petState) return;
 
-    // Determine pet status
-    let status = 'normal';
+    // Get the correct image based on pet state
+    let imageState = petState.status || 'normal';
+    
+    // Override status based on health/happiness if needed
     if (petState.health < 30) {
-      status = 'frail';
-    } else if (petState.happiness > 80) {
-      status = 'happy';
-    } else if (petState.status === 'sleeping') {
-      status = 'sleeping';
+      imageState = 'frail';
+    } else if (petState.status !== 'sleeping' && petState.happiness > 80) {
+      imageState = 'happy';
     }
 
-    // Update image
-    petImage.src = chrome.runtime.getURL(`assets/pets/cat/${status}.png`);
+    // Update image source
+    const imagePath = `assets/pets/cat/${imageState}.png`;
+    petImage.src = chrome.runtime.getURL(imagePath);
     
-    // Update visual effects
+    // Update container effects
     if (petState.health < 30) {
       petContainer.style.filter = 'grayscale(80%)';
     } else if (petState.happiness < 30) {
@@ -169,42 +204,71 @@ function startResultObserver() {
   console.log("Coding Pet Extension: Result observer started");
 }
 
-// Check if there's a successful submission result
+// Modify the checkForSubmissionResult function
 function checkForSubmissionResult() {
   if (isProcessingSubmission) return;
   
-  // Check if problem is already solved
+  // Get problem ID and check if already solved
   const problemTitle = document.querySelector('a[href^="/problems/"]');
-  const solvedIndicator = document.querySelector('.text-message-success');
-  
   if (!problemTitle) return;
+  
   const problemId = problemTitle.getAttribute('href');
+  const solvedIndicator = document.querySelector('.text-text-secondary');
+  const isSolvedBefore = solvedIndicator?.textContent.includes('Solved');
   
-  // If already solved, don't count it
-  if (solvedIndicator && lastSolvedProblem === problemId) {
-    return;
-  }
-
+  // Check for Accepted submission
   const resultElement = document.querySelector('[data-e2e-locator="submission-result"]');
-  
   if (resultElement && resultElement.textContent === 'Accepted') {
     isProcessingSubmission = true;
     
-    chrome.runtime.sendMessage({
-      type: 'PROBLEM_SOLVED',
-      problemId: problemId
-    }, async response => {
-      if (response && response.success) {
-        const { petState } = await chrome.storage.local.get('petState');
-        if (petState && lastSolvedProblem !== problemId) {
-          petState.solvedToday += 1;
-          petState.happiness = Math.min(100, petState.happiness + 10);
-          await chrome.storage.local.set({ petState });
-          lastSolvedProblem = problemId;
-          showPetHappyAnimation();
-        }
+    // Check if problem was already solved
+    chrome.storage.local.get('solvedProblems', async ({ solvedProblems = [] }) => {
+      if (solvedProblems.includes(problemId) || (isSolvedBefore && lastSolvedProblem === problemId)) {
+        // Show sassy message for trying to trick the pet
+        const message = document.createElement('div');
+        message.textContent = 'How dare ya trick me, you peasant!';
+        message.style.cssText = `
+          position: fixed;
+          bottom: 130px;
+          right: 130px;
+          background: #ffffff;
+          border: 1px solid #ccc;
+          border-radius: 8px;
+          padding: 10px;
+          z-index: 10002;
+          animation: fadeOut 2s forwards;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          color: #333;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        `;
+        document.body.appendChild(message);
+        
+        setTimeout(() => {
+          document.body.removeChild(message);
+        }, 2000);
+        
+        isProcessingSubmission = false;
+        isWatchingSubmission = false;
+        return;
       }
+
+      // For new solutions, update progress
+      const { petState } = await chrome.storage.local.get('petState');
+      if (petState) {
+        petState.solvedToday += 1;
+        petState.happiness = Math.min(100, petState.happiness + 10);
+        await chrome.storage.local.set({ petState });
+        
+        // Store the solved problem ID
+        solvedProblems.push(problemId);
+        await chrome.storage.local.set({ solvedProblems });
+        
+        lastSolvedProblem = problemId;
+        showPetHappyAnimation();
+      }
+      
       isProcessingSubmission = false;
+      isWatchingSubmission = false;
     });
   }
 }
@@ -246,12 +310,17 @@ async function showPetHappyAnimation() {
 
 // Show interaction menu when pet is clicked
 async function showPetInteractionMenu(event) {
-  // Remove any existing menu
+  event.preventDefault();
+  event.stopPropagation();
+
+  // Remove existing menu if present
   const existingMenu = document.getElementById('pet-interaction-menu');
   if (existingMenu) {
     document.body.removeChild(existingMenu);
     return;
   }
+
+  // Remove any existing menu
 
   const { petState } = await chrome.storage.local.get('petState');
   
@@ -359,16 +428,28 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
   }
 });
 
-// Add CSS for animations
+// Remove both existing style declarations and replace with this one
 const style = document.createElement('style');
 style.textContent = `
+  #coding-pet-container {
+    transition: filter 0.3s ease, transform 0.3s ease;
+  }
+
+  #coding-pet-container:hover {
+    transform: scale(1.05);
+  }
+
+  #pet-image {
+    transition: all 0.3s ease;
+  }
+
   .pet-happy-animation {
     animation: bounce 0.5s ease-in-out 0s 2;
   }
   
   @keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-20px); }
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-20px) scale(1.1); }
   }
   
   .menu-option {
@@ -394,3 +475,14 @@ if (document.readyState === 'loading') {
 chrome.storage.local.get('solvedProblems', ({ solvedProblems = [] }) => {
   lastSolvedProblem = solvedProblems[solvedProblems.length - 1];
 });
+
+// Add this CSS for the message animation
+const messageStyle = document.createElement('style');
+messageStyle.textContent = `
+  @keyframes fadeOut {
+    0% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+`;
+document.head.appendChild(messageStyle);

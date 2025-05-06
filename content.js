@@ -36,64 +36,67 @@ function createPetOverlay() {
       width: 100px;
       height: 100px;
       z-index: 10000;
-      pointer-events: none;
+      cursor: pointer;
       transition: all 0.3s ease;
     `;
     
     const petImage = document.createElement('img');
+    petImage.id = 'pet-image';
     petImage.style.width = '100%';
     petImage.style.height = 'auto';
-    petImage.style.pointerEvents = 'auto';
     petContainer.appendChild(petImage);
+    
+    // Add click handler for interactions
+    petContainer.addEventListener('click', showPetInteractionMenu);
     
     document.body.appendChild(petContainer);
     petOverlayActive = true;
 
-    // Update pet display immediately
+    // Initial state update
     updatePetDisplay();
-    
-    // Add periodic updates
-    setInterval(updatePetDisplay, 5000);
   }
 }
 
 // Update the pet display based on current state
 async function updatePetDisplay() {
   const petContainer = document.getElementById('coding-pet-container');
-  if (!petContainer) return;
+  const petImage = document.getElementById('pet-image');
+  if (!petContainer || !petImage) return;
   
   try {
     const { petState } = await chrome.storage.local.get('petState');
     
     if (!petState) {
       console.log("Coding Pet Extension: No pet state found, using default");
-      // Use default cat image if no state
-      const petImage = document.createElement('img');
-      petImage.src = chrome.runtime.getURL(`assets/pets/cat/normal.png`);
-      petImage.style.width = '100%';
-      petImage.style.height = 'auto';
-      
-      // Clear container and add the new image
-      petContainer.innerHTML = '';
-      petContainer.appendChild(petImage);
+      const defaultState = {
+        type: 'cat',
+        status: 'normal',
+        health: 100,
+        happiness: 50,
+        chonkLevel: 3,
+        solvedToday: 0,
+        backlog: 0
+      };
+      await chrome.storage.local.set({ petState: defaultState });
+      petImage.src = chrome.runtime.getURL('assets/pets/cat/normal.png');
       return;
     }
     
     console.log("Coding Pet Extension: Updating pet display with state:", petState);
     
-    // Use cat instead of dog
-    const petType = 'cat';
-    const petStatus = petState.status || 'normal';
+    // Update image based on current state
+    const status = petState.status || 'normal';
+    petImage.src = chrome.runtime.getURL(`assets/pets/cat/${status}.png`);
     
-    const petImage = document.createElement('img');
-    // Use the runtime URL to get the path right
-    petImage.src = chrome.runtime.getURL(`assets/pets/${petType}/${petStatus}.png`);
-    petImage.style.width = '100%';
-    petImage.style.height = 'auto';
+    // Add visual feedback based on health/happiness
+    if (petState.health < 30) {
+      petContainer.style.filter = 'grayscale(80%)';
+    } else if (petState.happiness < 30) {
+      petContainer.style.filter = 'brightness(80%)';
+    } else {
+      petContainer.style.filter = 'none';
+    }
     
-    // Clear container and add the new image
-    petContainer.innerHTML = '';
-    petContainer.appendChild(petImage);
   } catch (error) {
     console.error("Coding Pet Extension: Error updating pet display", error);
   }
@@ -234,13 +237,15 @@ async function showPetHappyAnimation() {
 }
 
 // Show interaction menu when pet is clicked
-function showPetInteractionMenu(event) {
+async function showPetInteractionMenu(event) {
   // Remove any existing menu
   const existingMenu = document.getElementById('pet-interaction-menu');
   if (existingMenu) {
     document.body.removeChild(existingMenu);
     return;
   }
+
+  const { petState } = await chrome.storage.local.get('petState');
   
   const menu = document.createElement('div');
   menu.id = 'pet-interaction-menu';
@@ -257,6 +262,11 @@ function showPetInteractionMenu(event) {
   `;
   
   menu.innerHTML = `
+    <div style="margin-bottom: 8px;">
+      <div>Health: ${petState.health}%</div>
+      <div>Happiness: ${petState.happiness}%</div>
+      <div>Progress: ${petState.solvedToday}/${petState.chonkLevel}</div>
+    </div>
     <div class="menu-option" id="let-sleep">Let it sleep</div>
     <div class="menu-option" id="ask-help">Ask for help</div>
   `;
@@ -296,6 +306,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   
   return true; // Required for async response
+});
+
+// Add this near the other listeners
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'local' && changes.petState) {
+    updatePetDisplay();
+  }
 });
 
 // Add CSS for animations

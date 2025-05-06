@@ -4,7 +4,14 @@ Kegawa, a pet for your coding adventures :3
 
 Feed them, else they die which you wouldn't want. Feed them by solving problems.
 
-ps: Contribute to this by adding animations/newer designs to the interface/pop-up. I'm going to add an LLM in the pet so that it would help you out if you're stuck on a problem. I promise it won't write you code but just give you enough tips to solve the problem. If y'all find any bugs while testing, please branch and fix it accordingly. :) Thank you!
+ps: Contribute to this by adding animations/newer designs to the interface/pop-up.
+
+## Future Scope
+
+1. Add more pet types
+2. Implement the LLM-based help feature
+3. Add more animation states and improved visuals
+4. Extend to support additional coding websites
 ## Features
 
 - Virtual pet that responds to your coding progress

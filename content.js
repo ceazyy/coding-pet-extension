@@ -2,6 +2,8 @@
 let isWatchingSubmission = false;
 let lastSubmissionId = null;
 let petOverlayActive = false;
+let lastSolvedProblem = null;
+let isProcessingSubmission = false;
 
 // Start monitoring for submissions
 function startMonitoring() {
@@ -67,34 +69,27 @@ function createPetOverlay() {
 async function updatePetDisplay() {
   const petContainer = document.getElementById('coding-pet-container');
   const petImage = document.getElementById('pet-image');
-  if (!petContainer || !petImage) return;
   
+  if (!petContainer || !petImage) return;
+
   try {
     const { petState } = await chrome.storage.local.get('petState');
-    
-    if (!petState) {
-      console.log("Coding Pet Extension: No pet state found, using default");
-      const defaultState = {
-        type: 'cat',
-        status: 'normal',
-        health: 100,
-        happiness: 50,
-        chonkLevel: 3,
-        solvedToday: 0,
-        backlog: 0
-      };
-      await chrome.storage.local.set({ petState: defaultState });
-      petImage.src = chrome.runtime.getURL('assets/pets/cat/normal.png');
-      return;
+    if (!petState) return;
+
+    // Determine pet status
+    let status = 'normal';
+    if (petState.health < 30) {
+      status = 'frail';
+    } else if (petState.happiness > 80) {
+      status = 'happy';
+    } else if (petState.status === 'sleeping') {
+      status = 'sleeping';
     }
-    
-    console.log("Coding Pet Extension: Updating pet display with state:", petState);
-    
-    // Update image based on current state
-    const status = petState.status || 'normal';
+
+    // Update image
     petImage.src = chrome.runtime.getURL(`assets/pets/cat/${status}.png`);
     
-    // Add visual feedback based on health/happiness
+    // Update visual effects
     if (petState.health < 30) {
       petContainer.style.filter = 'grayscale(80%)';
     } else if (petState.happiness < 30) {
@@ -102,7 +97,7 @@ async function updatePetDisplay() {
     } else {
       petContainer.style.filter = 'none';
     }
-    
+
   } catch (error) {
     console.error("Coding Pet Extension: Error updating pet display", error);
   }
@@ -176,30 +171,40 @@ function startResultObserver() {
 
 // Check if there's a successful submission result
 function checkForSubmissionResult() {
-  // Look for the specific Accepted message structure
+  if (isProcessingSubmission) return;
+  
+  // Check if problem is already solved
+  const problemTitle = document.querySelector('a[href^="/problems/"]');
+  const solvedIndicator = document.querySelector('.text-message-success');
+  
+  if (!problemTitle) return;
+  const problemId = problemTitle.getAttribute('href');
+  
+  // If already solved, don't count it
+  if (solvedIndicator && lastSolvedProblem === problemId) {
+    return;
+  }
+
   const resultElement = document.querySelector('[data-e2e-locator="submission-result"]');
   
   if (resultElement && resultElement.textContent === 'Accepted') {
-    console.log('Coding Pet Extension: Problem solved successfully!');
-    isWatchingSubmission = false;
+    isProcessingSubmission = true;
     
-    // Notify background script about solved problem
     chrome.runtime.sendMessage({
-      type: 'PROBLEM_SOLVED'
+      type: 'PROBLEM_SOLVED',
+      problemId: problemId
     }, async response => {
-      console.log("Coding Pet Extension: Got response from background", response);
       if (response && response.success) {
-        // Update progress immediately
         const { petState } = await chrome.storage.local.get('petState');
-        if (petState) {
+        if (petState && lastSolvedProblem !== problemId) {
           petState.solvedToday += 1;
           petState.happiness = Math.min(100, petState.happiness + 10);
           await chrome.storage.local.set({ petState });
-          
-          // Show pet animation/notification
+          lastSolvedProblem = problemId;
           showPetHappyAnimation();
         }
       }
+      isProcessingSubmission = false;
     });
   }
 }
@@ -384,3 +389,8 @@ if (document.readyState === 'loading') {
 } else {
   startMonitoring();
 }
+
+// Add storage for solved problems
+chrome.storage.local.get('solvedProblems', ({ solvedProblems = [] }) => {
+  lastSolvedProblem = solvedProblems[solvedProblems.length - 1];
+});

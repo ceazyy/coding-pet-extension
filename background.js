@@ -130,6 +130,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return false;
 });
 
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'PROBLEM_SOLVED') {
+    chrome.storage.local.get(['solvedProblems'], ({ solvedProblems = [] }) => {
+      if (!solvedProblems.includes(message.problemId)) {
+        solvedProblems.push(message.problemId);
+        chrome.storage.local.set({ solvedProblems });
+        sendResponse({ success: true });
+      } else {
+        sendResponse({ success: false });
+      }
+    });
+    return true; // Keep message channel open for async response
+  }
+});
+
 // Handle when a problem is solved
 async function handleProblemSolved() {
   try {

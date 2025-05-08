@@ -233,7 +233,7 @@ function checkForSubmissionResult() {
           right: 130px;
           background: #ffffff;
           border: 1px solid #ccc;
-          border-radius: 8px;
+          border-radius: 50%;
           padding: 10px;
           z-index: 10002;
           animation: fadeOut 5s forwards;

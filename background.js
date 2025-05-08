@@ -61,8 +61,8 @@ async function performDailyReset() {
             chrome.notifications.create({
               type: 'basic',
               iconUrl: '/assets/icon-128.png',
-              title: 'Your coding pet needs you!',
-              message: 'Your pet is in critical condition! Solve problems to save it!'
+              title: 'Feed your pet!',
+              message: 'Your pet is in critial condition! Welp!'
             });
           }
         } else {

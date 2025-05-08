@@ -77,7 +77,7 @@ async function setupEventListeners() {
         const chonkLevel = parseInt(chonkLevelInput.value);
         
         if (isNaN(chonkLevel) || chonkLevel < 1) {
-          alert('Please enter a valid number for daily goal (minimum 1)');
+          alert('Feed him something, you peasant (minimum 1)');
           return;
         }
 

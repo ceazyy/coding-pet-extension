@@ -1,7 +1,17 @@
-# Kegawa - Your Coding Pet Companion
+# Kegawa - Your Coding Pet
 
-Kegawa is a Chrome extension that provides a virtual pet companion to motivate you while solving coding problems on LeetCode. Your pet's health and happiness depend on your coding consistency!
+Kegawa, a pet for your coding adventures :3 
 
+Feed them, else they die which you wouldn't want. Feed them by solving problems.
+
+ps: Contribute to this by adding animations/newer designs to the interface/pop-up.
+
+## Future Scope
+
+1. Add more pet types
+2. Implement the LLM-based help feature
+3. Add more animation states and improved visuals
+4. Extend to support additional coding websites
 ## Features
 
 - Virtual pet that responds to your coding progress

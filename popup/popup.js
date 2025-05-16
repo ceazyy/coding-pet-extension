@@ -1,62 +1,73 @@
 // Load pet state when popup opens
 document.addEventListener('DOMContentLoaded', async () => {
-  console.log("Coding Pet Extension: Popup opened");
-  await updatePetDisplay();
-  setupEventListeners();
-});
+  const chonkLevelInput = document.getElementById('chonk-level');
+  const chonkValue = document.getElementById('chonk-value');
+  const solvedToday = document.getElementById('solved-today');
+  const dailyGoal = document.getElementById('daily-goal');
+  const statusMessage = document.getElementById('status-message');
 
-// Update the pet display with current data
-async function updatePetDisplay() {
-  try {
-    const { petState } = await chrome.storage.local.get('petState');
-    
-    if (!petState) {
-      console.log("Coding Pet Extension: No pet state found in popup");
-      return;
-    }
-    
-    console.log("Coding Pet Extension: Updating popup with pet state:", petState);
-    
-    // Update pet image - use cat instead of dog
-    const petImage = document.getElementById('pet-image');
-    if (petImage) {
-      petImage.src = `../assets/pets/cat/${petState.status || 'normal'}.png`;
-    }
-    
-    // Update health bar
-    const healthBar = document.getElementById('health-bar');
-    if (healthBar) {
-      healthBar.style.width = `${petState.health}%`;
-      healthBar.style.backgroundColor = getHealthColor(petState.health);
-    }
-    
-    // Update happiness bar
-    const happinessBar = document.getElementById('happiness-bar');
-    if (happinessBar) {
-      happinessBar.style.width = `${petState.happiness}%`;
-    }
-    
-    // Update progress text
-    const progressText = document.getElementById('progress-text');
-    if (progressText) {
-      progressText.textContent = `${petState.solvedToday}/${petState.chonkLevel}`;
-    }
-    
-    // Update backlog text
-    const backlogText = document.getElementById('backlog-text');
-    if (backlogText) {
-      backlogText.textContent = petState.backlog;
-    }
-    
-    // Set chonk level in settings
-    const chonkInput = document.getElementById('chonk-level');
-    if (chonkInput) {
-      chonkInput.value = petState.chonkLevel;
-    }
-  } catch (error) {
-    console.error("Coding Pet Extension: Error updating popup display", error);
+  // Load initial state
+  const { petState } = await chrome.storage.local.get('petState');
+  if (petState) {
+    updateUI(petState);
+  } else {
+    // Create default state
+    const defaultState = {
+      type: 'cat',
+      chonkLevel: 3,
+      solvedToday: 0,
+      lastActiveDate: new Date().toDateString()
+    };
+    await chrome.storage.local.set({ petState: defaultState });
+    updateUI(defaultState);
   }
-}
+
+  // Handle chonk level changes
+  chonkLevelInput.addEventListener('input', async (e) => {
+    const newValue = parseInt(e.target.value);
+    chonkValue.textContent = newValue;
+    
+    const { petState } = await chrome.storage.local.get('petState');
+    if (petState) {
+      petState.chonkLevel = newValue;
+      await chrome.storage.local.set({ petState });
+      updateUI(petState);
+      
+      // Notify content script to update pet display
+      chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+        if (tabs.length > 0) {
+          chrome.tabs.sendMessage(tabs[0].id, {
+            type: 'UPDATE_PET_DISPLAY'
+          }).catch(err => console.log("Tab not ready yet:", err));
+        }
+      });
+    }
+  });
+
+  // Update UI based on pet state
+  function updateUI(state) {
+    solvedToday.textContent = state.solvedToday;
+    dailyGoal.textContent = state.chonkLevel;
+    chonkLevelInput.value = state.chonkLevel;
+    chonkValue.textContent = state.chonkLevel;
+
+    // Update status message
+    if (state.solvedToday === 0) {
+      statusMessage.textContent = "Your pet is waiting for you to code!";
+    } else if (state.solvedToday >= state.chonkLevel) {
+      statusMessage.textContent = "Your pet is super happy! 🎉";
+    } else {
+      statusMessage.textContent = `Keep going! ${state.chonkLevel - state.solvedToday} more to go!`;
+    }
+  }
+
+  // Listen for state changes
+  chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === 'local' && changes.petState) {
+      updateUI(changes.petState.newValue);
+    }
+  });
+});
 
 // Get color for health bar based on health value
 function getHealthColor(health) {
@@ -104,9 +115,6 @@ async function setupEventListeners() {
         // Show success message
         showSaveSuccess();
         
-        // Update display
-        await updatePetDisplay();
-        
         // Notify content script
         notifyContentScript();
 
@@ -144,4 +152,3 @@ function notifyContentScript() {
 }
 
 // Set up periodic refresh to keep popup in sync
-setInterval(updatePetDisplay, 5000);

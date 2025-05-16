@@ -4,6 +4,14 @@ let lastSubmissionId = null;
 let petOverlayActive = false;
 let lastSolvedProblem = null;
 let isProcessingSubmission = false;
+let isDragging = false;
+let velocityY = 0;
+let lastTimestamp = 0;
+
+// Helper function for transform
+function setTranslate(xPos, yPos, el) {
+  el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+}
 
 // Add debug logging
 console.log("Coding Pet Extension: Content script loaded");
@@ -11,18 +19,13 @@ console.log("Coding Pet Extension: Content script loaded");
 // Start monitoring for submissions
 function startMonitoring() {
   console.log("Coding Pet Extension: Monitoring started on LeetCode");
-  
-  // Create and add pet overlay immediately
   createPetOverlay();
-  
-  // Watch for submission button clicks
   document.addEventListener('click', handlePotentialSubmission);
-  
-  // Start the observer to watch for DOM changes
   startResultObserver();
+  requestAnimationFrame(updatePetPhysics);
 }
 
-// Start monitoring immediately regardless of page
+// Start monitoring immediately
 startMonitoring();
 
 // Create the persistent pet overlay
@@ -43,61 +46,126 @@ function createPetOverlay() {
       position: fixed;
       bottom: 20px;
       right: 20px;
-      width: 100px;
-      height: 100px;
+      width: 120px;
+      height: 120px;
       z-index: 999999;
-      cursor: pointer;
-      background-color: rgba(255, 255, 255, 0.9);
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      cursor: grab;
+      background-color: transparent;
       pointer-events: auto;
+      user-select: none;
+      transform-origin: center center;
     `;
     
     const petImage = document.createElement('img');
     petImage.id = 'pet-image';
     petImage.style.cssText = `
-      width: 80%;
-      height: 80%;
+      width: 100%;
+      height: 100%;
       object-fit: contain;
+      pointer-events: none;
+      transition: transform 0.2s ease;
     `;
     
-    // Set initial image
-    const defaultImagePath = chrome.runtime.getURL('assets/pets/cat/normal.png');
-    console.log("Setting initial image path:", defaultImagePath);
-    petImage.src = defaultImagePath;
-    
-    // Add error handling for image loading
-    petImage.onerror = () => {
-      console.error("Failed to load pet image:", petImage.src);
-    };
-    
-    petImage.onload = () => {
-      console.log("Pet image loaded successfully");
-    };
-    
+    updatePetDisplay();
     petContainer.appendChild(petImage);
-    petContainer.addEventListener('click', showPetInteractionMenu);
+    
+    // Add drag functionality
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
+    let xOffset = 0;
+    let yOffset = 0;
+    
+    petContainer.addEventListener('mousedown', dragStart);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', dragEnd);
+    
+    function dragStart(e) {
+      initialX = e.clientX - xOffset;
+      initialY = e.clientY - yOffset;
+      
+      if (e.target === petContainer) {
+        isDragging = true;
+        velocityY = 0;
+        petContainer.style.cursor = 'grabbing';
+        petImage.src = chrome.runtime.getURL('assets/pets/cat/pick.png');
+      }
+    }
+    
+    function drag(e) {
+      if (isDragging) {
+        e.preventDefault();
+        currentX = e.clientX - initialX;
+        currentY = e.clientY - initialY;
+        
+        xOffset = currentX;
+        yOffset = currentY;
+        
+        setTranslate(currentX, currentY, petContainer);
+      }
+    }
+    
+    function dragEnd(e) {
+      if (!isDragging) return;
+      
+      initialX = currentX;
+      initialY = currentY;
+      isDragging = false;
+      petContainer.style.cursor = 'grab';
+      
+      // Calculate the max Y offset so the pet lands 20px from the bottom
+      const petHeight = petContainer.offsetHeight;
+      const maxY = window.innerHeight - petHeight - 20;
+      
+      // Set initial velocity for falling animation
+      velocityY = 0;
+      lastTimestamp = performance.now();
+      
+      // Update pet image based on state
+      updatePetDisplay();
+    }
     
     document.body.appendChild(petContainer);
     petOverlayActive = true;
-    console.log("Pet overlay created and added to DOM");
-
-    // Initial state update
-    updatePetDisplay();
   }
 }
 
-// Ensure overlay is created when content script loads
-document.addEventListener('DOMContentLoaded', () => {
-  console.log("DOM loaded, creating overlay...");
-  createPetOverlay();
-});
+// Physics update function
+function updatePetPhysics(timestamp) {
+  if (!lastTimestamp) lastTimestamp = timestamp;
+  const deltaTime = (timestamp - lastTimestamp) / 1000;
+  lastTimestamp = timestamp;
 
-// Also create overlay immediately in case DOMContentLoaded already fired
-createPetOverlay();
+  const petContainer = document.getElementById('coding-pet-container');
+  if (!petContainer || isDragging) {
+    requestAnimationFrame(updatePetPhysics);
+    return;
+  }
+
+  const currentTransform = new WebKitCSSMatrix(getComputedStyle(petContainer).transform);
+  const currentY = currentTransform.m42;
+  
+  // Apply gravity
+  const gravity = 980; // pixels per second squared
+  velocityY += gravity * deltaTime;
+  
+  // Calculate new position
+  const newY = currentY + velocityY * deltaTime;
+  
+  // Check for ground collision
+  const petHeight = petContainer.offsetHeight;
+  const maxY = window.innerHeight - petHeight - 20;
+  
+  if (newY > maxY) {
+    velocityY = 0;
+    setTranslate(currentTransform.m41, maxY, petContainer);
+  } else {
+    setTranslate(currentTransform.m41, newY, petContainer);
+  }
+  
+  requestAnimationFrame(updatePetPhysics);
+}
 
 // Update the pet display based on current state
 async function updatePetDisplay() {
@@ -110,29 +178,30 @@ async function updatePetDisplay() {
     const { petState } = await chrome.storage.local.get('petState');
     if (!petState) return;
 
-    // Get the correct image based on pet state
-    let imageState = petState.status || 'normal';
+    let imagePath;
+    const isLeetCode = window.location.hostname.includes('leetcode.com');
+    const progressPercentage = (petState.solvedToday / petState.chonkLevel) * 100;
     
-    // Override status based on health/happiness if needed
-    if (petState.health < 30) {
-      imageState = 'frail';
-    } else if (petState.status !== 'sleeping' && petState.happiness > 80) {
-      imageState = 'happy';
+    if (!isLeetCode) {
+      // When not on LeetCode, show sleeping.gif if daily goal is met
+      imagePath = petState.solvedToday >= petState.chonkLevel 
+        ? 'assets/pets/cat/Sleeping.gif'
+        : 'assets/pets/cat/frail.png';
+    } else {
+      // On LeetCode
+      if (petState.solvedToday === 0) {
+        imagePath = 'assets/pets/cat/frail.png';
+      } else if (petState.solvedToday >= petState.chonkLevel) {
+        imagePath = 'assets/pets/cat/happy.png';
+      } else if (progressPercentage >= 80) {
+        imagePath = 'assets/pets/cat/Normal.gif';
+      } else {
+        imagePath = 'assets/pets/cat/frail.png';
+      }
     }
-
-    // Update image source
-    const imagePath = `assets/pets/cat/${imageState}.png`;
+    
     petImage.src = chrome.runtime.getURL(imagePath);
     
-    // Update container effects
-    if (petState.health < 30) {
-      petContainer.style.filter = 'grayscale(80%)';
-    } else if (petState.happiness < 30) {
-      petContainer.style.filter = 'brightness(80%)';
-    } else {
-      petContainer.style.filter = 'none';
-    }
-
   } catch (error) {
     console.error("Coding Pet Extension: Error updating pet display", error);
   }

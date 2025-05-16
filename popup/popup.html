@@ -1,56 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Coding Pet Companion</title>
+  <meta charset="UTF-8">
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
   <div class="container">
-    <h1>Your Coding Cat</h1>
-    
-    <div class="pet-display">
-      <img id="pet-image" src="../assets/pets/cat/normal.png" alt="Kegawa: Your coding pet">
+    <div class="header">
+      <div class="paw-icon"></div>
+      <h1>Coding Pet</h1>
     </div>
-    
+
+    <div class="stats">
+      <div class="stat-item">
+        <span class="stat-label">Solved Today</span>
+        <span class="stat-value" id="solved-today">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Daily Goal</span>
+        <span class="stat-value" id="daily-goal">3</span>
+      </div>
+    </div>
+
+    <div class="chonk-meter">
+      <label for="chonk-level">Daily Goal</label>
+      <input type="range" id="chonk-level" min="1" max="10" value="3">
+      <div class="chonk-value" id="chonk-value">3</div>
+    </div>
+
     <div class="pet-status">
-      <div class="status-row">
-        <span>Health:</span>
-        <div class="progress-bar">
-          <div id="health-bar" class="progress-fill"></div>
-        </div>
-      </div>
-      
-      <div class="status-row">
-        <span>Happiness:</span>
-        <div class="progress-bar">
-          <div id="happiness-bar" class="progress-fill"></div>
-        </div>
-      </div>
-      
-      <div class="status-row">
-        <span>Today's Progress (3 by default):</span>
-        <span id="progress-text">0/3</span>
-      </div>
-      
-      <div class="status-row">
-        <span>Backlog:</span>
-        <span id="backlog-text">0</span>
-      </div>
-    </div>
-    
-    <div class="settings">
-      <h2>Settings</h2>
-      
-      <div class="setting-row">
-        <label for="chonk-level">Chonkness (Goal):</label>
-        <input type="number" id="chonk-level" min="1" max="20" value="3">
-      </div>
-      
-      <button id="save-settings">Save Settings</button>
-      <div id="save-message" class="save-message hidden">Settings saved!</div>
+      <p class="status-message" id="status-message">Keep coding to make your pet happy!</p>
     </div>
   </div>
-  
   <script src="popup.js"></script>
 </body>
 </html>

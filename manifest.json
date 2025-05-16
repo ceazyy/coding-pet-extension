@@ -34,7 +34,14 @@
     }
   ],
   "web_accessible_resources": [{
-    "resources": ["assets/pets/cat/*"],
+    "resources": [
+      "assets/pets/cat/*",
+      "assets/pets/cat/pick.png",
+      "assets/pets/cat/frail.png",
+      "assets/pets/cat/happy.png",
+      "assets/pets/cat/Normal.gif",
+      "assets/pets/cat/Sleeping.gif"
+    ],
     "matches": ["<all_urls>"]
   }]
 }

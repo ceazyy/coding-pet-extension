@@ -1,87 +1,146 @@
-# Kegawa - Your Coding Pet
+# Coding Pet Extension 🐾
 
-Kegawa, a pet for your coding adventures :3 
+A cute and interactive Chrome extension that helps you track your coding progress on LeetCode with an adorable pet companion!
 
-Feed them, else they die which you wouldn't want. Feed them by solving problems.
+![Coding Pet Demo](assets/demo.gif)
 
-ps: Contribute to this by adding animations/newer designs to the interface/pop-up.
+## Features ✨
 
-## Future Scope
+- 🐱 **Interactive Pet Overlay**
+  - Physics-based movement
+  - Draggable interface
+  - Realistic animations
+  - Multiple pet states (frail, happy, normal, sleeping)
 
-1. Add more pet types
-2. Implement the LLM-based help feature
-3. Add more animation states and improved visuals
-4. Extend to support additional coding websites
-## Features
+- 📊 **Progress Tracking**
+  - Daily coding goals
+  - LeetCode problem tracking
+  - Visual progress indicators
+  - Achievement system
 
-- Virtual pet that responds to your coding progress
-- Daily coding goals ("Chonk" levels)
-- Pet status tracking (health, happiness, progress)
-- Problem-solving backlog management
-- Interactive pet animations
-- Daily progress reset system
+- 🎨 **Cute Design**
+  - Minimalistic interface
+  - Pink theme
+  - Pet paw animations
+  - Responsive layout
 
-## Installation
+## Installation 🚀
 
-1. Clone this repository
-2. Open Chrome and navigate to `chrome://extensions/`
-3. Enable "Developer mode" in the top right
-4. Click "Load unpacked" and select the extension directory
+### From Chrome Web Store
+1. Visit the [Chrome Web Store](https://chrome.google.com/webstore/detail/coding-pet/your-extension-id)
+2. Click "Add to Chrome"
+3. Confirm the installation
 
-## Usage
+### Manual Installation
+1. Download the latest release from the [Releases page](https://github.com/yourusername/coding-pet/releases)
+2. Extract the ZIP file
+3. Open Chrome and go to `chrome://extensions/`
+4. Enable "Developer mode" in the top right
+5. Click "Load unpacked" and select the extracted folder
 
-1. Set your daily coding goal (Chonk level) in the extension popup
-2. Solve problems on LeetCode
-3. Your pet will react to your progress:
-   - Successfully solving problems increases happiness
-   - Meeting daily goals keeps your pet healthy
-   - Missing goals adds to your backlog
-   - Too much backlog may put your pet in critical condition!
+## Usage Guide 📖
 
-## Pet States
+### Setting Up
+1. Click the Coding Pet icon in your Chrome toolbar
+2. Set your daily coding goal using the slider
+3. The pet will appear on LeetCode pages
 
-- **Normal**: Default state
-- **Happy**: Achieved daily goal
-- **Frail**: Has backlog or low health
-- **Sleeping**: Resting state
+### Interacting with Your Pet
+- **Drag**: Click and drag the pet to move it around
+- **States**: The pet changes appearance based on your progress
+  - 🥺 Frail: When you haven't met your daily goal
+  - 😊 Happy: When you've completed your goal
+  - 😴 Sleeping: When you're inactive
+  - 🐱 Normal: Default state
 
-## File Structure
+### Tracking Progress
+- The extension automatically tracks:
+  - Problems solved
+  - Daily goals
+  - Streak information
+  - Achievement progress
+
+## Development 🛠️
+
+### Prerequisites
+- Node.js (v14 or higher)
+- Chrome browser
+- Basic knowledge of JavaScript
+
+### Setup
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/coding-pet.git
+   cd coding-pet
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Build the extension:
+   ```bash
+   npm run build
+   ```
+
+4. Load the extension in Chrome:
+   - Go to `chrome://extensions/`
+   - Enable "Developer mode"
+   - Click "Load unpacked"
+   - Select the `dist` folder
+
+### Project Structure
 ```
-coding-pet-extension/
-├── manifest.json
-├── background.js
-├── content.js
-├── popup/
-│   ├── popup.html
-│   ├── popup.css
-│   └── popup.js
+coding-pet/
+├── src/
+│   ├── content.js
+│   ├── popup/
+│   │   ├── popup.html
+│   │   ├── popup.js
+│   │   └── popup.css
+│   └── utils/
+│       ├── error.js
+│       ├── analytics.js
+│       └── feedback.js
 ├── assets/
-│   ├── icon-16.png
-│   ├── icon-48.png
-│   ├── icon-128.png
-│   └── pets/
-│       └── dog/
-│           ├── normal.png
-│           ├── happy.png
-│           ├── sleeping.png
-│           └── frail.png
-└── utils/
-    └── storage.js
+│   ├── images/
+│   └── icons/
+├── manifest.json
+└── README.md
 ```
-## Development
 
-- `popup/`: Contains the extension popup UI files
-- `utils/`: Utility functions for storage operations
-- `background.js`: Handles background processes and daily resets
-- `content.js`: Monitors LeetCode activity and manages pet animations
-- `manifest.json`: Extension configuration
+## Contributing 🤝
 
-## Permissions
+We welcome contributions! Please follow these steps:
 
-- `storage`: For saving pet state and settings
-- `alarms`: For daily progress reset
-- Host permission for `leetcode.com`
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## License
+## Privacy & Terms 📜
 
-MIT License (Recommended to add your specific license)
+- [Privacy Policy](privacy-policy.html)
+- [Terms of Service](terms.html)
+
+## Support 💖
+
+- Report bugs: [GitHub Issues](https://github.com/yourusername/coding-pet/issues)
+- Feature requests: [GitHub Discussions](https://github.com/yourusername/coding-pet/discussions)
+- Email: support@codingpet.com
+
+## License 📄
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments 🙏
+
+- LeetCode for their platform
+- Contributors and supporters
+- Open source community
+
+---
+
+Made with ❤️ by [Your Name]

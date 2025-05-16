@@ -115,8 +115,8 @@ We welcome contributions! Please follow these steps:
 
 ## Privacy & Terms 
 
-- [Privacy Policy](privacy-policy.html)
-- [Terms of Service](terms.html)
+- [Privacy Policy](https://ceazyy.github.io/coding-pet-extension/privacy-policy.html)
+- [Terms of Service](https://ceazyy.github.io/coding-pet-extension/terms.html)
 
 ## Support 
 

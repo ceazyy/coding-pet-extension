@@ -1,39 +1,37 @@
-# Coding Pet Extension 🐾
+# Coding Pet Extension 
 
 A cute and interactive Chrome extension that helps you track your coding progress on LeetCode with an adorable pet companion!
 
-![Coding Pet Demo](assets/demo.gif)
+## Features
 
-## Features ✨
-
-- 🐱 **Interactive Pet Overlay**
+- **Interactive Pet Overlay**
   - Physics-based movement
   - Draggable interface
   - Realistic animations
   - Multiple pet states (frail, happy, normal, sleeping)
 
-- 📊 **Progress Tracking**
+- **Progress Tracking**
   - Daily coding goals
   - LeetCode problem tracking
   - Visual progress indicators
   - Achievement system
 
-- 🎨 **Cute Design**
+- **Cute Design**
   - Minimalistic interface
   - Pink theme
   - Pet paw animations
   - Responsive layout
 
-## Installation 🚀
+## Installation 
 
 ### Manual Installation
-1. Download the latest release from the [Releases page](https://github.com/yourusername/coding-pet/releases)
+1. Download the file.
 2. Extract the ZIP file
 3. Open Chrome and go to `chrome://extensions/`
 4. Enable "Developer mode" in the top right
 5. Click "Load unpacked" and select the extracted folder
 
-## Usage Guide 📖
+## Usage Guide 
 
 ### Setting Up
 1. Click the Coding Pet icon in your Chrome toolbar
@@ -55,7 +53,7 @@ A cute and interactive Chrome extension that helps you track your coding progres
   - Streak information
   - Achievement progress
 
-## Development 🛠️
+## Development 
 
 ### Prerequisites
 - Node.js (v14 or higher)
@@ -65,7 +63,7 @@ A cute and interactive Chrome extension that helps you track your coding progres
 ### Setup
 1. Clone the repository:
    ```bash
-   git clone https://github.com/ceazyy/coding-pet.git
+   git clone https://github.com/ceazyy/coding-pet-extension.git
    cd coding-pet
    ```
 
@@ -105,7 +103,7 @@ coding-pet/
 └── README.md
 ```
 
-## Contributing 🤝
+## Contributing 
 
 We welcome contributions! Please follow these steps:
 
@@ -115,20 +113,20 @@ We welcome contributions! Please follow these steps:
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## Privacy & Terms 📜
+## Privacy & Terms 
 
 - [Privacy Policy](privacy-policy.html)
 - [Terms of Service](terms.html)
 
-## Support 💖
+## Support 
 
 - Buy me a coffee at [Coffee](https://buymeacoffee.com/ceazy)
 
-## License 📄
+## License 
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments 🙏
+## Acknowledgments 
 
 - LeetCode for their platform
 - Contributors and supporters

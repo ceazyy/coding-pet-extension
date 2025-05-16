@@ -65,8 +65,47 @@ function createPetOverlay() {
       pointer-events: none;
       transition: transform 0.2s ease;
     `;
+
+    // Set initial pet image
+    chrome.storage.local.get('petState', (result) => {
+      const petState = result.petState || {
+        type: 'cat',
+        status: 'frail',
+        solvedToday: 0,
+        chonkLevel: 3
+      };
+      
+      const isLeetCode = window.location.hostname.includes('leetcode.com');
+      let imagePath;
+      
+      if (!isLeetCode) {
+        // When not on LeetCode
+        imagePath = petState.solvedToday >= petState.chonkLevel 
+          ? 'assets/pets/cat/Sleeping.gif'
+          : 'assets/pets/cat/frail.png';
+      } else {
+        // On LeetCode
+        if (petState.solvedToday === 0) {
+          imagePath = 'assets/pets/cat/frail.png';
+        } else if (petState.solvedToday >= petState.chonkLevel) {
+          imagePath = 'assets/pets/cat/happy.png';
+        } else {
+          imagePath = 'assets/pets/cat/Normal.gif';
+        }
+      }
+      
+      const imageUrl = chrome.runtime.getURL(imagePath);
+      
+      // Add error handling for image loading
+      petImage.onerror = () => {
+        console.error('Failed to load pet image:', imagePath);
+        // Fallback to frail image
+        petImage.src = chrome.runtime.getURL('assets/pets/cat/frail.png');
+      };
+      
+      petImage.src = imageUrl;
+    });
     
-    updatePetDisplay();
     petContainer.appendChild(petImage);
     
     // Add drag functionality
@@ -178,12 +217,11 @@ async function updatePetDisplay() {
     const { petState } = await chrome.storage.local.get('petState');
     if (!petState) return;
 
-    let imagePath;
     const isLeetCode = window.location.hostname.includes('leetcode.com');
-    const progressPercentage = (petState.solvedToday / petState.chonkLevel) * 100;
+    let imagePath;
     
     if (!isLeetCode) {
-      // When not on LeetCode, show sleeping.gif if daily goal is met
+      // When not on LeetCode
       imagePath = petState.solvedToday >= petState.chonkLevel 
         ? 'assets/pets/cat/Sleeping.gif'
         : 'assets/pets/cat/frail.png';
@@ -193,14 +231,21 @@ async function updatePetDisplay() {
         imagePath = 'assets/pets/cat/frail.png';
       } else if (petState.solvedToday >= petState.chonkLevel) {
         imagePath = 'assets/pets/cat/happy.png';
-      } else if (progressPercentage >= 80) {
-        imagePath = 'assets/pets/cat/Normal.gif';
       } else {
-        imagePath = 'assets/pets/cat/frail.png';
+        imagePath = 'assets/pets/cat/Normal.gif';
       }
     }
     
-    petImage.src = chrome.runtime.getURL(imagePath);
+    const imageUrl = chrome.runtime.getURL(imagePath);
+    
+    // Add error handling for image loading
+    petImage.onerror = () => {
+      console.error('Failed to load pet image:', imagePath);
+      // Fallback to frail image
+      petImage.src = chrome.runtime.getURL('assets/pets/cat/frail.png');
+    };
+    
+    petImage.src = imageUrl;
     
   } catch (error) {
     console.error("Coding Pet Extension: Error updating pet display", error);

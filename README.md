@@ -122,9 +122,7 @@ We welcome contributions! Please follow these steps:
 
 ## Support 💖
 
-- Report bugs: [GitHub Issues](https://github.com/yourusername/coding-pet/issues)
-- Feature requests: [GitHub Discussions](https://github.com/yourusername/coding-pet/discussions)
-- Email: support@codingpet.com
+- Buy me a coffee at [Coffee](https://buymeacoffee.com/ceazy)
 
 ## License 📄
 

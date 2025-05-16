@@ -26,11 +26,6 @@ A cute and interactive Chrome extension that helps you track your coding progres
 
 ## Installation 🚀
 
-### From Chrome Web Store
-1. Visit the [Chrome Web Store](https://chrome.google.com/webstore/detail/coding-pet/your-extension-id)
-2. Click "Add to Chrome"
-3. Confirm the installation
-
 ### Manual Installation
 1. Download the latest release from the [Releases page](https://github.com/yourusername/coding-pet/releases)
 2. Extract the ZIP file
@@ -70,7 +65,7 @@ A cute and interactive Chrome extension that helps you track your coding progres
 ### Setup
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/coding-pet.git
+   git clone https://github.com/ceazyy/coding-pet.git
    cd coding-pet
    ```
 
@@ -143,4 +138,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Made with ❤️ by [Your Name]
+Made with ❤️ by ceazy

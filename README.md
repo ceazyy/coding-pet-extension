@@ -70,7 +70,7 @@ A cute and interactive Chrome extension that helps you track your coding progres
 ### Setup
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/coding-pet.git
+   git clone https://github.com/ceazyy/coding-pet.git
    cd coding-pet
    ```
 
@@ -143,4 +143,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Made with ❤️ by [Your Name]
+Made with ❤️ by ceazy
